@@ -37,7 +37,7 @@ seneca.use('auth')
 seneca.use('account')
 seneca.use('project')
 seneca.use('settings')
-seneca.use('seneca-todo-flex')
+seneca.use('todo-flex')
 seneca.use('data-editor')
 
 
