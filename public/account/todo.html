@@ -1,0 +1,46 @@
+<div ng-controller="Todo">
+  <form role="form" ng-show="show_new_list">
+    <br>
+    <div class="form-group">
+      <label for="list_name">Name</label>
+      <input type="text" class="form-control half-width" id="list_name" ng-model="list_name">
+    </div>
+    <button type="submit" class="btn btn-primary" ng-click="cancel_new_list()">Close</button>
+    <button type="submit" class="btn btn-primary" ng-click="ok_new_list()">Save</button>
+  </form>
+
+  <div ng-show="show_todo_lists">
+    <h3>Todo Lists</h3>
+    <br>
+    <ul class="selection-list nav nav-stacked nav-pills">
+      <li ng-repeat="list in lists"><a ng-click="show_tasks(list.id)" class="">{{list.name}}</a></li>
+      <li ng-show="lists.length === 0"><a>No Todo List</a></li>
+    </ul>
+    <br>
+    <form role="form" class="form-inline">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="New list name" ng-model="list_name">
+        <span class="input-group-btn">
+          <button class="btn btn-primary" ng-click="ok_new_list()" type="button">Add</button>
+        </span>
+      </div>
+    </form>
+  </div>
+
+  <div ng-show="show_todo_tasks">
+    <h3><button><span ng-click="show_lists()">&laquo;</span></button> Todo Items</h3>
+    <br>
+    <ul class="selection-list nav nav-stacked nav-pills">
+      <li ng-repeat="task in tasks" ng-class="{strike: task.mark === 'closed'}"><a ng-click="toggle_task(task)" class="">{{task.task}}</a></li>
+    </ul>
+    <br>
+    <form role="form" class="form-inline">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="New todo task" ng-model="new_task">
+        <span class="input-group-btn">
+          <button class="btn btn-primary" ng-click="ok_new_task()" type="button">Add</button>
+        </span>
+      </div>
+    </form>
+  </div>
+</div>

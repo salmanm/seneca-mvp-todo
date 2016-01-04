@@ -2,7 +2,7 @@
 <div ng-controller="Projects">
 
   <h3 ng-show="show_projects_list">Projects</h3>
-  
+
   <div ng-show="show_projects_list">
     <br>
     <button class="btn btn-primary" ng-click="new_project()">New Project &raquo;</button>
@@ -31,8 +31,8 @@
       <input type="text" class="form-control half-width" id="field_code" ng-model="field_code">
     </div>
 
-    <button type="submit" class="btn btn-primary" ng-click="close_project()">Close &raquo;</button>
-    <button type="submit" class="btn btn-primary" ng-click="save_project()">Save &raquo;</button>
+    <button type="submit" class="btn btn-primary" ng-click="close_project()">Close</button>
+    <button type="submit" class="btn btn-primary" ng-click="save_project()">Save</button>
 
     <p class="account_msg">
       {{project_msg}}
@@ -41,4 +41,3 @@
 
 
 </div>
-

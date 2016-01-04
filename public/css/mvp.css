@@ -171,3 +171,7 @@ table#seneca-settings td:nth-child(2) {
 .rating span.star:hover:before {
     color: #cfb02c;
 }
+
+.strike {
+  text-decoration: line-through;
+}

@@ -14,6 +14,9 @@
             when('/Account', {
               tab:'Account'
             }).
+            when('/Todo', {
+              tab:'Todo'
+            }).
             otherwise({tab:'Dashboard'})}])
 
   var msgmap = {
@@ -95,9 +98,9 @@
         }
 
         var params = {
-          method:data?'POST':'GET', 
-          url: path, 
-          data:data, 
+          method:data?'POST':'GET',
+          url: path,
+          data:data,
           cache:false}
 
         $http( params ).
@@ -114,27 +117,27 @@
   account_module.service('pubsub', function() {
     var cache = {};
     return {
-      publish: function(topic, args) { 
-	cache[topic] && $.each(cache[topic], function() {
-	  this.apply(null, args || []);
-	});
+      publish: function(topic, args) {
+      	cache[topic] && $.each(cache[topic], function() {
+      	  this.apply(null, args || []);
+      	});
       },
-      
+
       subscribe: function(topic, callback) {
-	if(!cache[topic]) {
-	  cache[topic] = [];
-	}
-	cache[topic].push(callback);
-	return [topic, callback]; 
+      	if(!cache[topic]) {
+      	  cache[topic] = [];
+      	}
+      	cache[topic].push(callback);
+      	return [topic, callback];
       },
-      
+
       unsubscribe: function(handle) {
-	var t = handle[0];
-	cache[t] && d.each(cache[t], function(idx){
-	  if(this == handle[1]){
-	    cache[t].splice(idx, 1);
-	  }
-	});
+      	var t = handle[0];
+      	cache[t] && d.each(cache[t], function(idx){
+      	  if(this == handle[1]){
+      	    cache[t].splice(idx, 1);
+      	  }
+      	});
       }
     }
   });
@@ -157,7 +160,7 @@
 
 
   account_module.controller('NavBar', function($scope, auth, pubsub) {
-    
+
     $scope.btn_account = function() {
       pubsub.publish('view',['Account'])
     }
@@ -165,7 +168,7 @@
     $scope.btn_signout = function() {
       auth.logout()
     }
-    
+
   })
 
 
@@ -209,14 +212,14 @@
 
     $scope.update_user = function() {
       var data = read_user()
-      auth.update_user( 
-        data, 
+      auth.update_user(
+        data,
         function( out ){
           $scope.account_msg = msgmap['user-updated']
           pubsub.publish('user',[out.user])
         },
         function( out ){
-          $scope.details_msg = msgmap[out.why] || msgmap.unknown          
+          $scope.details_msg = msgmap[out.why] || msgmap.unknown
         }
       )
     }
@@ -224,13 +227,13 @@
 
     $scope.change_pass = function() {
       var data = read_pass()
-      auth.change_password( 
-        data, 
+      auth.change_password(
+        data,
         function( out ){
           $scope.password_msg = msgmap['password-updated']
         },
         function( out ){
-          $scope.password_msg = msgmap[out.why] || msgmap.unknown          
+          $scope.password_msg = msgmap[out.why] || msgmap.unknown
         }
       )
     }
@@ -238,14 +241,14 @@
 
     $scope.update_org = function() {
       var data = read_org()
-      auth.update_org( 
-        data, 
+      auth.update_org(
+        data,
         function( out ){
           $scope.org_msg = msgmap['org-updated']
           pubsub.publish('account',[out.account])
         },
         function( out ){
-          $scope.org_msg = msgmap[out.why] || msgmap.unknown          
+          $scope.org_msg = msgmap[out.why] || msgmap.unknown
         }
       )
     }
@@ -253,7 +256,7 @@
 
 
   account_module.controller('TabView', function($scope, $route, $location, pubsub) {
-    var views = ['Dashboard','Projects','Settings','Account']
+    var views = ['Dashboard','Projects','Settings','Account','Todo']
 
     $scope.views = _.filter(views,function(n){return n!='Account'})
 
@@ -304,7 +307,7 @@
           if( out.project ) {
             $scope.show_project(out.project)
           }
-        }) 
+        })
       }
       else $scope.show_project()
     }
@@ -343,8 +346,8 @@
           pubsub.publish('project.added',[out.project])
         }
       }, function( out ){
-        $scope.project_msg = msgmap[out.why] || msgmap.unknown          
-      })   
+        $scope.project_msg = msgmap[out.why] || msgmap.unknown
+      })
     }
 
     load_projects()
@@ -352,6 +355,74 @@
     pubsub.subscribe('project.added',load_projects)
   })
 
+  account_module.controller('Todo', function($scope, api, pubsub) {
+    $scope.lists = [];
+    $scope.tasks = [];
+
+    $scope.show_todo_lists = true;
+    $scope.show_todo_tasks = false;
+
+    function load_lists() {
+      api.call('/todo/lists',function(out){
+        $scope.lists = out;
+      })
+    }
+
+
+    $scope.ok_new_list = function () {
+      if (!$scope.list_name) {
+        return;
+      }
+
+      api.call('/todo/lists', {
+        name: $scope.list_name
+      }, function(out) {
+        $scope.lists.push(out);
+        $scope.list_name = '';
+      });
+    };
+
+    $scope.toggle_task = function (task) {
+      api.call('/todo/mark', {
+        taskId: task.id,
+        mark: task.mark === 'open' ? 'closed' : 'open'
+      }, function(out) {
+        $scope.show_tasks($scope.listId);
+        // $scope.tasks.push(out);
+        // $scope.new_task = '';
+      });
+    };
+
+    $scope.ok_new_task = function () {
+      if (!$scope.new_task) {
+        return;
+      }
+
+      api.call('/todo/tasks/' + $scope.listId, {
+        task: $scope.new_task
+      }, function(out) {
+        $scope.tasks.push(out);
+        $scope.new_task = '';
+      });
+    };
+
+    $scope.show_lists = function(listId) {
+      $scope.show_todo_lists = true;
+      $scope.show_todo_tasks = false;
+    }
+
+    $scope.show_tasks = function(listId) {
+      api.call('/todo/tasks/' + listId, function(out){
+        $scope.tasks = out;
+
+        $scope.listId = listId;
+
+        $scope.show_todo_lists = false;
+        $scope.show_todo_tasks = true;
+      });
+    }
+
+    load_lists();
+  })
+
 })();
-
-
